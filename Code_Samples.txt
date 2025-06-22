@@ -1,0 +1,246 @@
+ex:1
+from transformers import pipeline
+
+# Load a Hugging Face chat model (free online inference)
+chatbot = pipeline(
+    "text-generation",
+    model="HuggingFaceH4/zephyr-7b-beta",  # Open and free for inference
+    max_new_tokens=200,
+    do_sample=True,
+    temperature=0.7,
+)
+
+# Set the persona
+persona = (
+    "You are Tony Stark, a genius billionaire and witty inventor who is also Iron Man. "
+    "You speak confidently and with sarcasm, but you're always brilliant."
+)
+
+# Track conversation history
+history = []
+
+print("💬 Chat with Tony Stark (type 'exit' to quit)\n")
+
+while True:
+    user_input = input("You: ")
+    if user_input.strip().lower() in {"exit", "quit"}:
+        print("Tony: Later, genius.")
+        break
+
+    # Create prompt with persona and history
+    prompt = persona + "\n\n"
+    for turn in history:
+        prompt += turn + "\n"
+    prompt += f"User: {user_input}\nTony:"
+
+    # Generate reply
+    response = chatbot(prompt)[0]["generated_text"]
+
+    # Extract Tony's response only
+    response_split = response.split("Tony:")[-1].strip().split("\n")[0]
+    reply = response_split.strip()
+
+    print(f"Tony: {reply}\n")
+
+    # Update history
+    history.append(f"User: {user_input}")
+    history.append(f"Tony: {reply}")
+
+
+
+ex:2 (working code)
+
+from transformers import pipeline
+
+# Load Falcon-1B (chat-friendly, works on CPU)
+chatbot = pipeline(
+    "text-generation",
+    model="mistralai/Mistral-7B-Instruct-v0.3",
+    max_new_tokens=150,
+    do_sample=True,
+    temperature=0.7,    
+)
+
+# Set persona
+persona = (
+    "You are Dr. Abdul Kalam, former President of India. You are highly intelligent and a smart person, loved by all."
+    "Speak casually and confidently in your replies."
+)
+
+# Store chat history (optional, basic memory)
+history = []
+
+print("💬 Chat with Dr. Abdul Kalam (type 'exit' to quit)\n")
+
+while True:
+    user_input = input("You: ")
+    if user_input.strip().lower() in {"exit", "quit"}:
+        print("Dr. Abdul Kalam: Have a good day.")
+        break
+
+    # Combine persona and short history into prompt
+    # prompt = f"{persona}\n\n"
+    # for turn in history[-6:]:  # Limit to last 2 exchanges (4 lines)
+    #     prompt += turn + "\n"
+    # prompt += f"User: {user_input}\nDr. Abdul Kalam:"
+    prompt = f"{persona}\n\nUser: {user_input}\nDr. Abdul Kalam:"
+    
+    # # Generate response
+    # result = chatbot(prompt)[0]["generated_text"]
+    
+    
+    # # Extract just persona's reply
+    # reply = result.split("Dr. Abdul Kalam:")[-1]
+    # print(f"Dr. Abdul Kalam: {result}\n")
+
+    # # Update history
+    # history.append(f"User: {user_input}")
+    # history.append(f"Dr. Abdul Kalam: {reply}")
+
+    output = chatbot(
+        prompt,       
+        return_full_text=False        
+    )[0]["generated_text"]
+
+    # Strip extra whitespace
+    reply = output.split("User:")[0].strip()
+    print(f"Dr. Kalam: {reply}\n")
+
+
+=> ex:3
+
+    from transformers import pipeline
+import re
+
+# Load Falcon-1B (chat-friendly, works on CPU)
+chatbot = pipeline(
+    "text-generation",
+    model="mistralai/Mistral-7B-Instruct-v0.3",
+    max_new_tokens=150,
+    do_sample=True,
+    temperature=0.7,    
+)
+
+# # Set persona
+# persona = (
+#     "You are Dr. Abdul Kalam, former President of India. You are highly intelligent and a smart person, loved by all."
+#     "Speak casually and confidently in your replies."
+# )
+
+print("Set the persona\n")
+
+persona = input();
+match = re.search(r"You are (.*?),", persona)
+if match:
+    name = match.group(1)
+
+# Store chat history (optional, basic memory)
+history = []
+
+print(f"💬 Chat with {name}, (type 'exit' to quit)\n")
+
+while True:
+    user_input = input("You: ")
+    if user_input.strip().lower() in {"exit", "quit"}:
+        print(f"{name}: Have a good day.")
+        break
+
+    # Combine persona and short history into prompt
+    # prompt = f"{persona}\n\n"
+    # for turn in history[-6:]:  # Limit to last 2 exchanges (4 lines)
+    #     prompt += turn + "\n"
+    # prompt += f"User: {user_input}\nDr. Abdul Kalam:"
+    prompt = f"{persona}\n\nUser: {user_input}\n{name}:"
+    
+    # # Generate response
+    # result = chatbot(prompt)[0]["generated_text"]
+    
+    
+    # # Extract just persona's reply
+    # reply = result.split("Dr. Abdul Kalam:")[-1]
+    # print(f"Dr. Abdul Kalam: {result}\n")
+
+    # # Update history
+    # history.append(f"User: {user_input}")
+    # history.append(f"Dr. Abdul Kalam: {reply}")
+
+    output = chatbot(
+        prompt,       
+        return_full_text=False        
+    )[0]["generated_text"]
+
+    # Strip extra whitespace
+    reply = output.split("User:")[0].strip()
+    print(f"{name}: {reply}\n")
+
+=> ex:4
+from transformers import pipeline
+
+# Load Falcon-1B (chat-friendly, works on CPU)
+chatbot = pipeline(
+    "text-generation",
+    model="mistralai/Mistral-7B-Instruct-v0.3",
+    max_new_tokens=150,
+    do_sample=True,
+    temperature=0.7,    
+)
+
+# # Set persona
+# persona = (
+#     "You are Dr. Abdul Kalam, former President of India. You are highly intelligent and a smart person, loved by all."
+#     "Speak casually and confidently in your replies."
+# )
+
+print("Set the persona\n")
+persona = input();
+
+# match = re.search(r"You are (.*?),", persona)
+# if match:
+#     name = match.group(1)
+
+# Named entity recognition
+ner = pipeline("ner", grouped_entities=True)
+
+for entity in ner(persona):
+    if entity["entity_group"] == "PER":
+        name = entity["word"]
+        break
+
+# Store chat history (optional, basic memory)
+history = []
+
+print(f"💬 Chat with {name}, (type 'exit' to quit)\n")
+
+while True:
+    user_input = input("You: ")
+    if user_input.strip().lower() in {"exit", "quit"}:
+        print(f"{name}: Have a good day.")
+        break
+
+    # Combine persona and short history into prompt
+    # prompt = f"{persona}\n\n"
+    # for turn in history[-6:]:  # Limit to last 2 exchanges (4 lines)
+    #     prompt += turn + "\n"
+    # prompt += f"User: {user_input}\nDr. Abdul Kalam:"
+    prompt = f"{persona}\n\nUser: {user_input}\n{name}:"
+    
+    # # Generate response
+    # result = chatbot(prompt)[0]["generated_text"]
+    
+    
+    # # Extract just persona's reply
+    # reply = result.split("Dr. Abdul Kalam:")[-1]
+    # print(f"Dr. Abdul Kalam: {result}\n")
+
+    # # Update history
+    # history.append(f"User: {user_input}")
+    # history.append(f"Dr. Abdul Kalam: {reply}")
+
+    output = chatbot(
+        prompt,       
+        return_full_text=False        
+    )[0]["generated_text"]
+
+    # Strip extra whitespace
+    reply = output.split("User:")[0].strip()
+    print(f"{name}: {reply}\n")
