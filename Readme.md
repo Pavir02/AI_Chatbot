@@ -27,7 +27,8 @@
   `pip install transformers accelerate torch protobuf sentencepiece accelerate hf_xet`
 
 - Install huggingface cli:
-  `Install huggingface cli - pip install -U "huggingface_hub[cli]"`
+
+  `pip install -U "huggingface_hub[cli]"`
 
 - Get access token from (create a token with read access)
   https://huggingface.co/settings/tokens
